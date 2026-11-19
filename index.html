@@ -12,26 +12,22 @@
       padding: 20px;
       line-height: 1.5;
     }
-    .btn, button {
+    button {
       display: inline-block;
       padding: 10px 16px;
       margin: 4px 4px 16px 0;
       background-color: #0070f3;
       color: white;
-      text-decoration: none;
       border-radius: 6px;
       border: none;
       cursor: pointer;
       font-size: 15px;
     }
-    .btn:hover, button:hover {
+    button:hover {
       background-color: #005bb5;
     }
     .hidden {
       display: none;
-    }
-    .permanently-hidden {
-      display: none !important;
     }
     #mainp, #top2 {
       white-space: pre-line;
@@ -73,27 +69,23 @@
   <h1 id="mainh">Welcome BOOKSFORCAM Online Webpage</h1>
   <p id="mainp">Developed By Cameron Threadgill.</p>
 
-  <!-- Navigation Buttons -->
   <div>
-    <button id="veiwlstbtn">View List</button>
-    <button id="updatebtn">Update Books</button>
-    <button id="leaderboardbrd">Leader Board</button>
-    <button id="Readmebtn">ReadMe</button>
-    <button id="adminTabBtn">Admin Login</button>
+    <button type="button" id="veiwlstbtn">View List</button>
+    <button type="button" id="updatebtn">Update Books</button>
+    <button type="button" id="leaderboardbrd">Leader Board</button>
+    <button type="button" id="Readmebtn">ReadMe</button>
+    <button type="button" id="adminTabBtn">Admin Login</button>
   </div>
 
-  <!-- 1. Book List Section -->
   <div id="bookSection" class="hidden">
     <h2 id="top1"></h2>
     <p id="top2"></p>
     <ul id="bookList"></ul>
   </div>
 
-  <!-- 2. Web3Forms Update Books Section -->
   <div id="formContainer"></div>
   <p id="statusText"></p>
 
-  <!-- 3. Leaderboard Section -->
   <table id="leaderboardTable" class="hidden">
     <thead>
       <tr>
@@ -105,32 +97,29 @@
     <tbody id="leaderboardBody"></tbody>
   </table>
 
-  <!-- 4. Admin Login & Leaderboard Editor Section -->
   <div id="adminSection" class="hidden">
     <div id="loginBox">
       <h3>Admin Authentication</h3>
       <input type="text" id="usernameInput" placeholder="Username">
       <input type="password" id="passwordInput" placeholder="Password">
-      <button id="logbtn">Login</button>
+      <button type="button" id="logbtn">Login</button>
       <p id="loginMsg"></p>
     </div>
 
     <div id="adminPanel" class="hidden">
       <h3>Update Leaderboard (Logged in as CameronT)</h3>
-      <input type="text" id="contribName" placeholder="Contributor Name (e.g., MsMcCrimmon)">
+      <input type="text" id="contribName" placeholder="Contributor Name">
       <input type="number" id="contribScore" placeholder="Score / Books Contributed">
-      <button id="updateScoreBtn">Add / Update Score</button>
+      <button type="button" id="updateScoreBtn">Add / Update Score</button>
       <p id="adminMsg"></p>
     </div>
   </div>
 
   <script>
-    // --- Authentication Config (SHA-256) ---
     const EXPECTED_USER = "CameronT";
     const EXPECTED_HASH = "e02dfbfd31c75b2349592ea389022cbb231c33342d4decccf6f2ffdd9d5a6b21";
     let isAdminLoggedIn = false;
 
-    // --- Book Library Data ---
     const books = [
       { id: "Book1", href: "https://anarcho-copy.org", title: '"Linux Bible, 10th Edition" by Christopher Negus' },
       { id: "Book2", href: "https://knu.edu.af", title: '"Advanced Linux Programming" by Mark Mitchell, Jeffrey David Oldham, Alex Samuel' },
@@ -141,7 +130,6 @@
       { id: "Book7", href: "https://gulf.edu.sa", title: "The Internet For Dummies" }
     ];
 
-    // --- Leaderboard Data (Loads saved edits from localStorage if available) ---
     const defaultLeaderboard = [
       { name: "MsMcCrimmon", score: 3 },
       { name: "MsAlston", score: 2 },
@@ -149,7 +137,6 @@
     ];
     let leaderboard = JSON.parse(localStorage.getItem("camLeaderboard")) || defaultLeaderboard;
 
-    // --- DOM Elements ---
     const mainh = document.getElementById("mainh");
     const mainp = document.getElementById("mainp");
     const bookSection = document.getElementById("bookSection");
@@ -160,15 +147,17 @@
     const tbody = document.getElementById("leaderboardBody");
     const adminSection = document.getElementById("adminSection");
 
-    // Helper: SHA-256 Hasher
     async function sha256(message) {
+      if (!window.crypto || !window.crypto.subtle) {
+        alert("SHA-256 requires HTTPS (GitHub Pages) or localhost. Open this via GitHub Pages to log in.");
+        return "";
+      }
       const msgBuffer = new TextEncoder().encode(message);
       const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
     }
 
-    // Helper: Hide all views before switching tabs
     function resetViews() {
       bookSection.classList.add("hidden");
       leaderboardTable.classList.add("hidden");
@@ -177,7 +166,6 @@
       statusText.textContent = "";
     }
 
-    // Helper: Render & Sort Leaderboard Table
     function renderLeaderboard() {
       tbody.innerHTML = "";
       leaderboard
@@ -193,7 +181,6 @@
         });
     }
 
-    // 1. View List Button
     document.getElementById("veiwlstbtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Welcome BOOKSFORCAM Online Webpage";
@@ -216,7 +203,6 @@
       bookSection.classList.remove("hidden");
     });
 
-    // 2. Update Books Button (Web3Forms)
     document.getElementById("updatebtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Suggest or Update a Book";
@@ -263,7 +249,6 @@
       });
     });
 
-    // 3. Leader Board Button
     document.getElementById("leaderboardbrd").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Contributor Leader Board";
@@ -272,61 +257,54 @@
       leaderboardTable.classList.remove("hidden");
     });
 
-    // 4. ReadMe Button
     document.getElementById("Readmebtn").addEventListener("click", () => {
       resetViews();
-
       mainh.textContent = "README Page";
-      mainp.textContent = Please print everything default.\nThank you for contributing to my constant strive for knowledge,\nsincerely Cameron Threadgill.;
+      mainp.textContent = `Please print everything default.\nThank you for contributing to my constant strive for knowledge,\nsincerely Cameron Threadgill.`;
     });
-    // 5. Admin Tab Button
+
     document.getElementById("adminTabBtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Admin Controls";
       mainp.textContent = isAdminLoggedIn ? "Manage the contributor leaderboard below:" : "Log in to manage the leaderboard.";
-      adminSection.classList.remove("hidden");
-      // Also show the live leaderboard right beneath the admin panel so you can see updates immediately
-      renderLeaderboard();
-      leaderboardTable.classList.remove("hidden");
-    });
-    // 6. Login Button Listener (SHA-256)
-    document.getElementById("logbtn").addEventListener("click", async () => {
-      const user = document.getElementById("usernameInput").value.trim();
-      const pass = document.getElementById("passwordInput").value;
-      const loginMsg = document.getElementById("loginMsg");
-      const enteredHash = await sha256(pass);
-      if (user === EXPECTED_USER && enteredHash === EXPECTED_HASH) {
-        isAdminLoggedIn = true;
-        document.getElementById("loginBox").classList.add("hidden");
-        document.getElementById("adminPanel").classList.remove("hidden");
-        mainp.textContent = "Manage the contributor leaderboard below:";
-      } else {
-        loginMsg.textContent = "Invalid username or password.";
-        loginMsg.style.color = "red";
-      }
-    });
-    // 7. Update Leaderboard Score Listener
-    document.getElementById("updateScoreBtn").addEventListener("click", () => {
-      const nameInput = document.getElementById("contribName").value.trim();
-      const scoreInput = Number(document.getElementById("contribScore").value);
-      const adminMsg = document.getElementById("adminMsg");
-      if (!nameInput || isNaN(scoreInput)) {
-        adminMsg.textContent = "Please enter both a valid name and number.";
-        adminMsg.style.color = "red";
-        return;
-      }
-      const existing = leaderboard.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
-      if (existing) {
-        existing.score = scoreInput;
-      } else {
-        leaderboard.push({ name: nameInput, score: scoreInput });
-      }
-      localStorage.setItem("camLeaderboard", JSON.stringify(leaderboard));
-      renderLeaderboard();
-      adminMsg.textContent = Updated ${nameInput} to ${scoreInput}!;
-      adminMsg.style.color = "green";
-      document.getElementById("contribName").value = "";
-      document.getElementById("contribScore").value = "";
-    });
-  </body>
-</html>
+adminSection.classList.remove("hidden");
+renderLeaderboard();
+leaderboardTable.classList.remove("hidden");
+});
+document.getElementById("logbtn").addEventListener("click", async () => {
+const user = document.getElementById("usernameInput").value.trim();
+const pass = document.getElementById("passwordInput").value;
+const loginMsg = document.getElementById("loginMsg");
+const enteredHash = await sha256(pass);
+if (user === EXPECTED_USER && enteredHash === EXPECTED_HASH) {
+isAdminLoggedIn = true;
+document.getElementById("loginBox").classList.add("hidden");
+document.getElementById("adminPanel").classList.remove("hidden");
+mainp.textContent = "Manage the contributor leaderboard below:";
+} else {
+loginMsg.textContent = "Invalid username or password.";
+loginMsg.style.color = "red";
+}
+});
+document.getElementById("updateScoreBtn").addEventListener("click", () => {
+const nameInput = document.getElementById("contribName").value.trim();
+const scoreInput = Number(document.getElementById("contribScore").value);
+const adminMsg = document.getElementById("adminMsg");
+if (!nameInput || isNaN(scoreInput)) {
+adminMsg.textContent = "Please enter both a valid name and number.";
+adminMsg.style.color = "red";
+return;
+}
+const existing = leaderboard.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+if (existing) {
+existing.score = scoreInput;
+} else {
+leaderboard.push({ name: nameInput, score: scoreInput });
+}
+localStorage.setItem("camLeaderboard", JSON.stringify(leaderboard));
+renderLeaderboard();
+adminMsg.textContent = Updated ${nameInput} to ${scoreInput}!;
+adminMsg.style.color = "green";
+document.getElementById("contribName").value = "";
+document.getElementById("contribScore").value = "";
+});
