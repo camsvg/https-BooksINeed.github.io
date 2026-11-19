@@ -12,22 +12,26 @@
       padding: 20px;
       line-height: 1.5;
     }
-    button {
+    .btn, button {
       display: inline-block;
       padding: 10px 16px;
       margin: 4px 4px 16px 0;
       background-color: #0070f3;
       color: white;
+      text-decoration: none;
       border-radius: 6px;
       border: none;
       cursor: pointer;
       font-size: 15px;
     }
-    button:hover {
+    .btn:hover, button:hover {
       background-color: #005bb5;
     }
     .hidden {
       display: none;
+    }
+    .permanently-hidden {
+      display: none !important;
     }
     #mainp, #top2 {
       white-space: pre-line;
@@ -70,22 +74,24 @@
   <p id="mainp">Developed By Cameron Threadgill.</p>
 
   <div>
-    <button type="button" id="veiwlstbtn">View List</button>
-    <button type="button" id="updatebtn">Update Books</button>
-    <button type="button" id="leaderboardbrd">Leader Board</button>
-    <button type="button" id="Readmebtn">ReadMe</button>
-    <button type="button" id="adminTabBtn">Admin Login</button>
+    <button id="veiwlstbtn">View List</button>
+    <button id="updatebtn">Update Books</button>
+    <button id="leaderboardbrd">Leader Board</button>
+    <button id="Readmebtn">ReadMe</button>
   </div>
 
+  <!-- Book List Section -->
   <div id="bookSection" class="hidden">
     <h2 id="top1"></h2>
     <p id="top2"></p>
     <ul id="bookList"></ul>
   </div>
 
+  <!-- Form Section -->
   <div id="formContainer"></div>
   <p id="statusText"></p>
 
+  <!-- Leaderboard Section -->
   <table id="leaderboardTable" class="hidden">
     <thead>
       <tr>
@@ -97,45 +103,22 @@
     <tbody id="leaderboardBody"></tbody>
   </table>
 
-  <div id="adminSection" class="hidden">
-    <div id="loginBox">
-      <h3>Admin Authentication</h3>
-      <input type="text" id="usernameInput" placeholder="Username">
-      <input type="password" id="passwordInput" placeholder="Password">
-      <button type="button" id="logbtn">Login</button>
-      <p id="loginMsg"></p>
-    </div>
-
-    <div id="adminPanel" class="hidden">
-      <h3>Update Leaderboard (Logged in as CameronT)</h3>
-      <input type="text" id="contribName" placeholder="Contributor Name">
-      <input type="number" id="contribScore" placeholder="Score / Books Contributed">
-      <button type="button" id="updateScoreBtn">Add / Update Score</button>
-      <p id="adminMsg"></p>
-    </div>
-  </div>
-
   <script>
-    const EXPECTED_USER = "CameronT";
-    const EXPECTED_HASH = "e02dfbfd31c75b2349592ea389022cbb231c33342d4decccf6f2ffdd9d5a6b21";
-    let isAdminLoggedIn = false;
-
     const books = [
-      { id: "Book1", href: "https://anarcho-copy.org", title: '"Linux Bible, 10th Edition" by Christopher Negus' },
-      { id: "Book2", href: "https://knu.edu.af", title: '"Advanced Linux Programming" by Mark Mitchell, Jeffrey David Oldham, Alex Samuel' },
-      { id: "Book3", href: "https://github.com", title: '"Android NDK Beginner\'s Guide" by Sylvain Ratabouil' },
-      { id: "Book4", href: "https://hws.edu", title: '"Introduction to Programming Using Java" by David J. Eck' },
-      { id: "Book5", href: "https://github.com", title: "HTML5 Notes for Professionals" },
-      { id: "Book6", href: "https://hal.science", title: '"Modern C" by Jens Gustedt' },
-      { id: "Book7", href: "https://gulf.edu.sa", title: "The Internet For Dummies" }
+      { id: "Book1", href: "https://edu.anarcho-copy.org/GNU%20Linux%20-%20Unix-Like/Linux%20Bible-10th%20Edition.pdf", title: '"Linux Bible, 10th Edition" by Christopher Negus' },
+      { id: "Book2", href: "https://library.knu.edu.af/opac/temp/10195.pdf", title: '"Advanced Linux Programming" by Mark Mitchell, Jeffrey David Oldham, Alex Samuel' },
+      { id: "Book3", href: "https://github.com/junliu-cn/Books/blob/master/Packt.Android.NDK.Beginners.Guide.2nd.Edition.pdf", title: '"Android NDK Beginner\'s Guide" by Sylvain Ratabouil' },
+      { id: "Book4", href: "https://math.hws.edu/eck/cs124/downloads/javanotes9.pdf", title: '"Introduction to Programming Using Java" by David J. Eck' },
+      { id: "Book5", href: "https://github.com/nurfawaiq/ebook-collection/blob/main/HTML%20%26%20CSS/HTML5%20Notes%20For%20Professionals.pdf", title: "HTML5 Notes for Professionals" },
+      { id: "Book6", href: "https://inria.hal.science/hal-02383654v2/file/modernC.pdf", title: '"Modern C" by Jens Gustedt' },
+      { id: "Book7", href: "https://gulf.edu.sa/assets/lib/cs/the-internet-for-dummies.pdf", title: "The Internet For Dummies" }
     ];
 
-    const defaultLeaderboard = [
+    const leaderboard = [
       { name: "MsMcCrimmon", score: 3 },
       { name: "MsAlston", score: 2 },
       { name: "MsForbes", score: 1 }
     ];
-    let leaderboard = JSON.parse(localStorage.getItem("camLeaderboard")) || defaultLeaderboard;
 
     const mainh = document.getElementById("mainh");
     const mainp = document.getElementById("mainp");
@@ -145,42 +128,16 @@
     const statusText = document.getElementById("statusText");
     const leaderboardTable = document.getElementById("leaderboardTable");
     const tbody = document.getElementById("leaderboardBody");
-    const adminSection = document.getElementById("adminSection");
 
-    async function sha256(message) {
-      if (!window.crypto || !window.crypto.subtle) {
-        alert("SHA-256 requires HTTPS (GitHub Pages) or localhost. Open this via GitHub Pages to log in.");
-        return "";
-      }
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-    }
-
+    // Helper function to clear/hide sections when switching tabs
     function resetViews() {
       bookSection.classList.add("hidden");
       leaderboardTable.classList.add("hidden");
-      adminSection.classList.add("hidden");
       formContainer.innerHTML = "";
       statusText.textContent = "";
     }
 
-    function renderLeaderboard() {
-      tbody.innerHTML = "";
-      leaderboard
-        .sort((a, b) => b.score - a.score)
-        .forEach((entry, index) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>#${index + 1}</td>
-            <td>${entry.name}</td>
-            <td>${entry.score}</td>
-          `;
-          tbody.appendChild(row);
-        });
-    }
-
+    // 1. View List Button
     document.getElementById("veiwlstbtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Welcome BOOKSFORCAM Online Webpage";
@@ -203,6 +160,7 @@
       bookSection.classList.remove("hidden");
     });
 
+    // 2. Update Books Button
     document.getElementById("updatebtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Suggest or Update a Book";
@@ -241,7 +199,6 @@
             statusText.textContent = "Submission failed. Please try again.";
           }
         } catch (error) {
-          console.error(error);
           statusText.textContent = "Network error. Please try again.";
         } finally {
           submitBtn.disabled = false;
@@ -249,62 +206,34 @@
       });
     });
 
+    // 3. Leader Board Button
     document.getElementById("leaderboardbrd").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "Contributor Leader Board";
       mainp.textContent = "Top contributors to Cam's library:";
-      renderLeaderboard();
+
+      tbody.innerHTML = "";
+      leaderboard
+        .sort((a, b) => b.score - a.score)
+        .forEach((entry, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>#${index + 1}</td>
+            <td>${entry.name}</td>
+            <td>${entry.score}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
       leaderboardTable.classList.remove("hidden");
     });
 
+    // 4. ReadMe Button
     document.getElementById("Readmebtn").addEventListener("click", () => {
       resetViews();
       mainh.textContent = "README Page";
       mainp.textContent = `Please print everything default.\nThank you for contributing to my constant strive for knowledge,\nsincerely Cameron Threadgill.`;
     });
-
-    document.getElementById("adminTabBtn").addEventListener("click", () => {
-      resetViews();
-      mainh.textContent = "Admin Controls";
-      mainp.textContent = isAdminLoggedIn ? "Manage the contributor leaderboard below:" : "Log in to manage the leaderboard.";
-adminSection.classList.remove("hidden");
-renderLeaderboard();
-leaderboardTable.classList.remove("hidden");
-});
-document.getElementById("logbtn").addEventListener("click", async () => {
-const user = document.getElementById("usernameInput").value.trim();
-const pass = document.getElementById("passwordInput").value;
-const loginMsg = document.getElementById("loginMsg");
-const enteredHash = await sha256(pass);
-if (user === EXPECTED_USER && enteredHash === EXPECTED_HASH) {
-isAdminLoggedIn = true;
-document.getElementById("loginBox").classList.add("hidden");
-document.getElementById("adminPanel").classList.remove("hidden");
-mainp.textContent = "Manage the contributor leaderboard below:";
-} else {
-loginMsg.textContent = "Invalid username or password.";
-loginMsg.style.color = "red";
-}
-});
-document.getElementById("updateScoreBtn").addEventListener("click", () => {
-const nameInput = document.getElementById("contribName").value.trim();
-const scoreInput = Number(document.getElementById("contribScore").value);
-const adminMsg = document.getElementById("adminMsg");
-if (!nameInput || isNaN(scoreInput)) {
-adminMsg.textContent = "Please enter both a valid name and number.";
-adminMsg.style.color = "red";
-return;
-}
-const existing = leaderboard.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
-if (existing) {
-existing.score = scoreInput;
-} else {
-leaderboard.push({ name: nameInput, score: scoreInput });
-}
-localStorage.setItem("camLeaderboard", JSON.stringify(leaderboard));
-renderLeaderboard();
-adminMsg.textContent = Updated ${nameInput} to ${scoreInput}!;
-adminMsg.style.color = "green";
-document.getElementById("contribName").value = "";
-document.getElementById("contribScore").value = "";
-});
+  </script>
+</body>
+</html>
