@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOOKSFORCAM</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .btn, button {
+      display: inline-block;
+      padding: 10px 16px;
+      margin: 4px 4px 16px 0;
+      background-color: #0070f3;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .btn:hover, button:hover {
+      background-color: #005bb5;
+    }
+    .hidden {
+      display: none;
+    }
+    .permanently-hidden {
+      display: none !important;
+    }
+    #mainp, #top2 {
+      white-space: pre-line;
+    }
+    input {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      max-width: 400px;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #0070f3;
+      color: white;
+    }
+    th:last-child, td:last-child {
+      text-align: right;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="mainh">Welcome BOOKSFORCAM Online Webpage</h1>
+  <p id="mainp">Developed By Cameron Threadgill.</p>
+
+  <div>
+    <button id="veiwlstbtn">View List</button>
+    <button id="updatebtn">Update Books</button>
+    <button id="leaderboardbrd">Leader Board</button>
+    <button id="Readmebtn">ReadMe</button>
+  </div>
+
+  <!-- Book List Section -->
+  <div id="bookSection" class="hidden">
+    <h2 id="top1"></h2>
+    <p id="top2"></p>
+    <ul id="bookList"></ul>
+  </div>
+
+  <!-- Form Section -->
+  <div id="formContainer"></div>
+  <p id="statusText"></p>
+
+  <!-- Leaderboard Section -->
+  <table id="leaderboardTable" class="hidden">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Contributor</th>
+        <th>Books</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+
+  <script>
+    const books = [
+      { id: "Book1", href: "https://edu.anarcho-copy.org/GNU%20Linux%20-%20Unix-Like/Linux%20Bible-10th%20Edition.pdf", title: '"Linux Bible, 10th Edition" by Christopher Negus' },
+      { id: "Book2", href: "https://library.knu.edu.af/opac/temp/10195.pdf", title: '"Advanced Linux Programming" by Mark Mitchell, Jeffrey David Oldham, Alex Samuel' },
+      { id: "Book3", href: "https://github.com/junliu-cn/Books/blob/master/Packt.Android.NDK.Beginners.Guide.2nd.Edition.pdf", title: '"Android NDK Beginner\'s Guide" by Sylvain Ratabouil' },
+      { id: "Book4", href: "https://math.hws.edu/eck/cs124/downloads/javanotes9.pdf", title: '"Introduction to Programming Using Java" by David J. Eck' },
+      { id: "Book5", href: "https://github.com/nurfawaiq/ebook-collection/blob/main/HTML%20%26%20CSS/HTML5%20Notes%20For%20Professionals.pdf", title: "HTML5 Notes for Professionals" },
+      { id: "Book6", href: "https://inria.hal.science/hal-02383654v2/file/modernC.pdf", title: '"Modern C" by Jens Gustedt' },
+      { id: "Book7", href: "https://gulf.edu.sa/assets/lib/cs/the-internet-for-dummies.pdf", title: "The Internet For Dummies" }
+    ];
+
+    const leaderboard = [
+      { name: "MsMcCrimmon", score: 3 },
+      { name: "MsAlston", score: 2 },
+      { name: "MsForbes", score: 1 }
+    ];
+
+    const mainh = document.getElementById("mainh");
+    const mainp = document.getElementById("mainp");
+    const bookSection = document.getElementById("bookSection");
+    const bookList = document.getElementById("bookList");
+    const formContainer = document.getElementById("formContainer");
+    const statusText = document.getElementById("statusText");
+    const leaderboardTable = document.getElementById("leaderboardTable");
+    const tbody = document.getElementById("leaderboardBody");
+
+    // Helper function to clear/hide sections when switching tabs
+    function resetViews() {
+      bookSection.classList.add("hidden");
+      leaderboardTable.classList.add("hidden");
+      formContainer.innerHTML = "";
+      statusText.textContent = "";
+    }
+
+    // 1. View List Button
+    document.getElementById("veiwlstbtn").addEventListener("click", () => {
+      resetViews();
+      mainh.textContent = "Welcome BOOKSFORCAM Online Webpage";
+      mainp.textContent = "Developed By Cameron Threadgill.";
+
+      const top1 = document.getElementById("top1");
+      const top2 = document.getElementById("top2");
+      top1.textContent = "Cam’s Software Development Reference Library Book List";
+      top1.style.textDecoration = "underline";
+      top2.textContent = "WEBPAGE V.ALPHA(1.0) |\nupdated on November 4 2026 | Please return printed material to the residence of Cameron .T (room 17 on unit 361)";
+      top2.style.textDecoration = "underline";
+
+      bookList.innerHTML = "";
+      for (const book of books) {
+        const li = document.createElement("li");
+        li.id = book.id;
+        li.innerHTML = `<a href="${book.href}" target="_blank">${book.title}</a>`;
+        bookList.appendChild(li);
+      }
+      bookSection.classList.remove("hidden");
+    });
+
+    // 2. Update Books Button
+    document.getElementById("updatebtn").addEventListener("click", () => {
+      resetViews();
+      mainh.textContent = "Suggest or Update a Book";
+      mainp.textContent = "Fill out the form below to send a book request to Cameron.";
+
+      formContainer.innerHTML = `
+        <form id="responseForm">
+          <input type="hidden" name="access_key" value="8946415d-c8b4-4db7-bf25-a6ee27e7b791">
+          <input type="text" id="userInputBN" name="BOOK TITLE" placeholder="Book Name" required>
+          <input type="text" id="userInputDT" name="Date" placeholder="Date" required>
+          <input type="text" id="userInputMSG" name="Message" placeholder="Message (optional)">
+          <input type="text" id="userInputPN" name="NAME" placeholder="Your name (for leaderboard, optional)">
+          <button type="submit" id="submitBtn">Submit</button>
+        </form>
+      `;
+
+      const form = document.getElementById("responseForm");
+      const submitBtn = document.getElementById("submitBtn");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        statusText.textContent = "Sending...";
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch("https://web3forms.com", {
+            method: "POST",
+            body: formData
+          });
+          const result = await response.json();
+          if (result.success) {
+            statusText.textContent = "Response sent!";
+            form.reset();
+          } else {
+            statusText.textContent = "Submission failed. Please try again.";
+          }
+        } catch (error) {
+          statusText.textContent = "Network error. Please try again.";
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    });
+
+    // 3. Leader Board Button
+    document.getElementById("leaderboardbrd").addEventListener("click", () => {
+      resetViews();
+      mainh.textContent = "Contributor Leader Board";
+      mainp.textContent = "Top contributors to Cam's library:";
+
+      tbody.innerHTML = "";
+      leaderboard
+        .sort((a, b) => b.score - a.score)
+        .forEach((entry, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>#${index + 1}</td>
+            <td>${entry.name}</td>
+            <td>${entry.score}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      leaderboardTable.classList.remove("hidden");
+    });
+
+    // 4. ReadMe Button
+    document.getElementById("Readmebtn").addEventListener("click", () => {
+      resetViews();
+      mainh.textContent = "README Page";
+      mainp.textContent = `Please print everything default.\nThank you for contributing to my constant strive for knowledge,\nsincerely Cameron Threadgill.`;
+    });
+  </script>
+</body>
+</html>
